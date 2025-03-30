@@ -9,14 +9,14 @@
         h1 { margin: 20px; font-size: 1.8em; }
         .filter-container { margin: 10px; display: flex; flex-direction: column; gap: 10px; }
         input, select { padding: 8px; font-size: 1em; width: 90%; max-width: 400px; margin: auto; }
-        
+
         .table-container { overflow-x: auto; margin: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
         th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 0.9em; }
         th { background-color: #f4f4f4; }
 
         /* Ajuste de imágenes */
-        img { width: 40px; height: 40px; object-fit: cover; }
+        img { width: 50px; height: 50px; object-fit: cover; }
 
         /* Diseño responsive */
         @media (max-width: 768px) {
@@ -26,23 +26,6 @@
             table { min-width: 100%; font-size: 0.85em; }
             th, td { padding: 6px; }
             img { width: 35px; height: 35px; }
-        }
-
-        /* Estilos para el detalle desplegable */
-        .detail-row { display: none; background-color: #f9f9f9; }
-        .detail-cell { padding: 10px; font-size: 0.9em; text-align: left; border-top: none; }
-
-        .producto {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .producto-img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 5px;
         }
     </style>
 </head>
@@ -70,7 +53,7 @@
     </div>
 
     <script>
-        const apiUrl = "https://script.google.com/macros/s/AKfycbywrBMnrBm2wrH6gQROIJjml0tKilxf7vJRYfe2QLaSczfaRBuXRH1f_1kGWls6duvH4Q/exec"; // Reemplaza con la URL de tu Apps Script desplegado
+        const apiUrl = "https://script.google.com/macros/s/AKfycbywrBMnrBm2wrH6gQROIJjml0tKilxf7vJRYfe2QLaSczfaRBuXRH1f_1kGWls6duvH4Q/exec";
         let products = [];
 
         async function fetchProducts() {
@@ -98,24 +81,22 @@
         }
 
         function displayProducts(list) {
-            const productList = document.getElementById("productList");
-            productList.innerHTML = ""; // Limpiar la tabla antes de cargar los productos
+            const tableBody = document.getElementById("productList");
+            tableBody.innerHTML = "";
 
             list.forEach((p, index) => {
                 const row = document.createElement("tr");
-
                 row.innerHTML = `
-                    <td>${p.imagen ? `<img src="${p.imagen}" alt="Imagen del producto" class="producto-img">` : "Sin imagen"}</td>
-                    <td>${p.descripcion || "Sin descripción"}</td>
-                    <td>${p.marca || "Sin marca"}</td>
-                    <td>$${p.precio || "0"}</td>
-                    <td>${p.unidadMedida || "N/A"}</td>
-                    <td>${p.cantidadPack || "N/A"}</td>
-                    <td>${p.formaPago || "No especificado"}</td>
-                    <td>${p.plazoEntrega || "No especificado"}</td>
+                    <td><img src="${p.imagen}" alt="Imagen del producto"></td>
+                    <td>${p.descripcion}</td>
+                    <td>${p.marca}</td>
+                    <td>$${p.precio}</td>
+                    <td>${p.unidadMedida}</td>
+                    <td>${p.cantidadPack}</td>
+                    <td>${p.formaPago}</td>
+                    <td>${p.plazoEntrega}</td>
                 `;
-
-                productList.appendChild(row);
+                tableBody.appendChild(row);
             });
         }
 
@@ -153,3 +134,4 @@
 
 </body>
 </html>
+
