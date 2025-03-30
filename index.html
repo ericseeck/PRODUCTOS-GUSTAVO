@@ -32,19 +32,18 @@
         .detail-row { display: none; background-color: #f9f9f9; }
         .detail-cell { padding: 10px; font-size: 0.9em; text-align: left; border-top: none; }
 
-.producto {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+        .producto {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
 
-.producto-img {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 5px;
-}
-
+        .producto-img {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +70,7 @@
     </div>
 
     <script>
-        const apiUrl = "https://script.google.com/macros/s/AKfycbz2IGGoFZuOG4-Kdsw-_Xzvtzd95lYvt2hdX1-PvlV56mUlAA6BkZBiJ9ky_Uq8acJsTA/exec"; // Reemplazar con la URL de la API de Apps Script
+        const apiUrl = "https://script.google.com/macros/s/AKfycbywrBMnrBm2wrH6gQROIJjml0tKilxf7vJRYfe2QLaSczfaRBuXRH1f_1kGWls6duvH4Q/exec"; // Reemplaza con la URL de tu Apps Script desplegado
         let products = [];
 
         async function fetchProducts() {
@@ -100,29 +99,24 @@
 
         function displayProducts(list) {
             const productList = document.getElementById("productList");
-            productList.innerHTML = ""; // Limpiar la lista antes de cargar los productos
+            productList.innerHTML = ""; // Limpiar la tabla antes de cargar los productos
 
             list.forEach((p, index) => {
                 const row = document.createElement("tr");
-                
+
                 row.innerHTML = `
-                    <td><img src="${p.imagen}" alt="Imagen del producto" class="producto-img"></td>
-                    <td>${p.descripcion}</td>
-                    <td>${p.marca}</td>
-                    <td>$${p.precio}</td>
-                    <td>${p.unidadMedida}</td>
-                    <td>${p.cantidadPack}</td>
-                    <td>${p.formaPago}</td>
-                    <td>${p.plazoEntrega}</td>
+                    <td>${p.imagen ? `<img src="${p.imagen}" alt="Imagen del producto" class="producto-img">` : "Sin imagen"}</td>
+                    <td>${p.descripcion || "Sin descripción"}</td>
+                    <td>${p.marca || "Sin marca"}</td>
+                    <td>$${p.precio || "0"}</td>
+                    <td>${p.unidadMedida || "N/A"}</td>
+                    <td>${p.cantidadPack || "N/A"}</td>
+                    <td>${p.formaPago || "No especificado"}</td>
+                    <td>${p.plazoEntrega || "No especificado"}</td>
                 `;
-                
+
                 productList.appendChild(row);
             });
-        }
-
-        function toggleDetail(index) {
-            let detailRow = document.getElementById(`detail-${index}`);
-            detailRow.style.display = detailRow.style.display === "table-row" ? "none" : "table-row";
         }
 
         function populateBrandFilter() {
@@ -159,4 +153,3 @@
 
 </body>
 </html>
-
