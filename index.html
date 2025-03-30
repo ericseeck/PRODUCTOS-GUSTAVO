@@ -6,15 +6,17 @@
     <title>Listado de Productos - Gustavo</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; }
-        .container { width: 80%; margin: auto; text-align: left; }
+        .container { width: 90%; margin: auto; text-align: left; }
         h1 { text-align: center; }
         .search-bar { width: 100%; padding: 10px; margin-bottom: 10px; }
         .filter-sort { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .table-header { font-weight: bold; background: #ddd; padding: 10px; display: flex; }
-        .table-header div { flex: 1; text-align: center; }
-        .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; }
-        .product img { width: 50px; height: 50px; object-fit: cover; margin-right: 10px; }
+        .table-container { overflow-x: auto; }
+        .table { width: 100%; border-collapse: collapse; }
+        .table th, .table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        .table th { background: #ddd; }
+        .product-row { cursor: pointer; }
         .details { display: none; background: #f9f9f9; padding: 10px; }
+        .product-image { width: 50px; height: 50px; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -35,10 +37,14 @@
         </select>
     </div>
 
-    <!-- Encabezado de la tabla -->
-    <div id="tableHeader" class="table-header"></div>
-
-    <div id="productList"></div>
+    <div class="table-container">
+        <table class="table">
+            <thead>
+                <tr id="tableHeader"></tr>
+            </thead>
+            <tbody id="productList"></tbody>
+        </table>
+    </div>
 </div>
 
 <script>
@@ -50,7 +56,7 @@
     async function fetchProducts() {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        headers = data.headers; // Captura el encabezado (fila 1)
+        headers = data.headers; // Captura los encabezados
         products = data.products; // Captura los productos
         displayTableHeader();
         populateBrandFilter();
@@ -58,12 +64,12 @@
     }
 
     function displayTableHeader() {
-        const headerContainer = document.getElementById("tableHeader");
-        headerContainer.innerHTML = "";
+        const headerRow = document.getElementById("tableHeader");
+        headerRow.innerHTML = "";
         headers.forEach(header => {
-            let div = document.createElement("div");
-            div.textContent = header;
-            headerContainer.appendChild(div);
+            let th = document.createElement("th");
+            th.textContent = header;
+            headerRow.appendChild(th);
         });
     }
 
@@ -82,29 +88,50 @@
         const container = document.getElementById("productList");
         container.innerHTML = "";
         list.forEach((product, index) => {
-            let div = document.createElement("div");
-            div.className = "product";
-            div.innerHTML = `
-                <img src="${product.imagen}" alt="Imagen">
-                <strong>${product.descripcion}</strong> - ${product.marca} - $${product.precio}
-                <div class="details" id="details-${index}">
-                    <p>Unidad de Medida: ${product.unidad_medida}</p>
-                    <p>Cantidad Pack: ${product.cantidad_pack}</p>
-                    <p>Forma de Pago: ${product.forma_pago}</p>
-                    <p>Plazo de Entrega: ${product.plazo_entrega}</p>
-                </div>
+            let row = document.createElement("tr");
+            row.className = "product-row";
+            row.innerHTML = `
+                <td><img src="${product.imagen}" class="product-image" alt="Imagen"></td>
+                <td>${product.producto}</td>
+                <td>${product.marca}</td>
+                <td>${product.pack}</td>
+                <td>${product.palet}</td>
+                <td>$${product.precio}</td>
+                <td>${product.forma_entrega}</td>
+                <td>${product.pago}</td>
+                <td>${product.con_entrega}</td>
             `;
-            div.addEventListener("click", () => {
-                let details = document.getElementById(`details-${index}`);
-                details.style.display = details.style.display === "none" ? "block" : "none";
-            });
-            container.appendChild(div);
+            row.addEventListener("click", () => toggleDetails(index));
+            container.appendChild(row);
+
+            let detailsRow = document.createElement("tr");
+            let detailsCell = document.createElement("td");
+            detailsCell.colSpan = headers.length;
+            detailsCell.className = "details";
+            detailsCell.id = `details-${index}`;
+            detailsCell.innerHTML = `
+                <strong>Producto:</strong> ${product.producto}<br>
+                <strong>Marca:</strong> ${product.marca}<br>
+                <strong>Pack:</strong> ${product.pack}<br>
+                <strong>Palet:</strong> ${product.palet}<br>
+                <strong>Precio:</strong> $${product.precio}<br>
+                <strong>Forma de Entrega:</strong> ${product.forma_entrega}<br>
+                <strong>Pago:</strong> ${product.pago}<br>
+                <strong>Con Entrega:</strong> ${product.con_entrega}
+            `;
+            detailsRow.appendChild(detailsCell);
+            container.appendChild(detailsRow);
         });
+    }
+
+    function toggleDetails(index) {
+        let details = document.getElementById(`details-${index}`);
+        details.style.display = details.style.display === "none" ? "table-cell" : "none";
     }
 
     document.getElementById("search").addEventListener("input", (e) => {
         const query = e.target.value.toLowerCase();
-        const filtered = products.filter(p => p.descripcion.toLowerCase().includes(query));
+        const filtered = products.filter(p => p.producto.toLowerCase().includes(query));
         displayProducts(filtered);
     });
 
