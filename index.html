@@ -3,18 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Listado de Productos</title>
+    <title>Listado de Productos - Gustavo</title>
     <style>
-        body { font-family: Arial, sans-serif; }
-        .container { width: 80%; margin: auto; }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .container { width: 80%; margin: auto; text-align: left; }
+        h1 { text-align: center; }
         .search-bar { width: 100%; padding: 10px; margin-bottom: 10px; }
         .filter-sort { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; cursor: pointer; }
-        .product img { width: 50px; height: 50px; object-fit: cover; }
+        .table-header { font-weight: bold; background: #ddd; padding: 10px; display: flex; }
+        .table-header div { flex: 1; text-align: center; }
+        .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; cursor: pointer; display: flex; align-items: center; }
+        .product img { width: 50px; height: 50px; object-fit: cover; margin-right: 10px; }
         .details { display: none; background: #f9f9f9; padding: 10px; }
     </style>
 </head>
 <body>
+
+<h1>LISTADO DE PRODUCTOS - GUSTAVO</h1>
 
 <div class="container">
     <input type="text" id="search" class="search-bar" placeholder="Buscar producto...">
@@ -30,19 +35,36 @@
         </select>
     </div>
 
+    <!-- Encabezado de la tabla -->
+    <div id="tableHeader" class="table-header"></div>
+
     <div id="productList"></div>
 </div>
 
 <script>
-    const apiUrl = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLiRT6IizglCTRjJRAf9mHuazGYSsJD89lh5EPMMFNTJdZpGIJ8yUqj6Q2XXWDkCxRpjlddS2F927V3Bn6QnsKKPXdStsvxmbP7KcoS49IYk1cFM9mAm3X21Sjr9mQ-Vi19eYZTViq56zuwVQMsrbxdk9EPNNLQUQa59LRAUzUKqzLpbnfHdzgaj0T5XoBMcMQ_iaJH9hmNAohYWnPcR4bPqjpxGwsU3Y6NY0CLSXFK5WtmrtiqI1Z3xS0Wh0jBWpufXVSrFsiw2T7I8CJK43U7NwhOosJtGIHErHMnr&lib=Mg4_-BZQ5eKqxrJky2M6RanUYN4nIvDyU";
+    const apiUrl = "TU_URL_DEL_SCRIPT_AQUI";
 
     let products = [];
+    let headers = [];
 
     async function fetchProducts() {
         const response = await fetch(apiUrl);
-        products = await response.json();
+        const data = await response.json();
+        headers = data.headers; // Captura el encabezado (fila 1)
+        products = data.products; // Captura los productos
+        displayTableHeader();
         populateBrandFilter();
         displayProducts(products);
+    }
+
+    function displayTableHeader() {
+        const headerContainer = document.getElementById("tableHeader");
+        headerContainer.innerHTML = "";
+        headers.forEach(header => {
+            let div = document.createElement("div");
+            div.textContent = header;
+            headerContainer.appendChild(div);
+        });
     }
 
     function populateBrandFilter() {
