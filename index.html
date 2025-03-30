@@ -14,11 +14,8 @@
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
         th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 0.9em; }
         th { background-color: #f4f4f4; }
-
-        /* Ajuste de imágenes */
         img { width: 50px; height: 50px; object-fit: cover; }
 
-        /* Diseño responsive */
         @media (max-width: 768px) {
             h1 { font-size: 1.5em; }
             .filter-container { flex-direction: column; align-items: center; }
@@ -53,12 +50,12 @@
     </div>
 
     <script>
-        const apiUrl = "https://script.google.com/macros/s/AKfycbwkQm9EOX8GmNG82mK53o83TPhEZvE5GAZ7TsiGrfqOEiT0YRGZHBpveYEdR791Fxk9dA/exec";
+        const apiUrl = "https://script.google.com/macros/s/AKfycbx3HYE2HPRG5ZE8Hj1GFw9RTH3wuvjuw3ay-8BYmm4Dt45QMFLvr6c6D2a79tYfKLx3Vw/exec"; 
         let products = [];
 
         async function fetchProducts() {
             try {
-                const response = await fetch(apiUrl);
+                const response = await fetch(apiUrl + "?action=getProducts");
                 const data = await response.json();
 
                 if (!data || !data.products) {
@@ -84,10 +81,10 @@
             const tableBody = document.getElementById("productList");
             tableBody.innerHTML = "";
 
-            list.forEach((p, index) => {
+            list.forEach(p => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
-                    <td><img src="${p.imagen}" alt="Imagen del producto"></td>
+                    <td>${p.imagen ? `<img src="${p.imagen}" alt="Imagen">` : "Sin imagen"}</td>
                     <td>${p.descripcion}</td>
                     <td>${p.marca}</td>
                     <td>$${p.precio}</td>
