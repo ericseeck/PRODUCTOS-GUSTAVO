@@ -15,17 +15,32 @@
         th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 0.9em; }
         th { background-color: #f4f4f4; }
 
-        /* Ajuste de imágenes */
-        img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; }
+        img { width: 40px; height: 40px; object-fit: cover; }
 
-        /* Diseño responsive */
         @media (max-width: 768px) {
             h1 { font-size: 1.5em; }
             .filter-container { flex-direction: column; align-items: center; }
             input, select { width: 95%; }
             table { min-width: 100%; font-size: 0.85em; }
             th, td { padding: 6px; }
-            img { width: 40px; height: 40px; }
+            img { width: 35px; height: 35px; }
+        }
+
+        /* Estilos para el detalle desplegable */
+        .detail-row { display: none; background-color: #f9f9f9; }
+        .detail-cell { padding: 10px; font-size: 0.9em; text-align: left; border-top: none; }
+
+        .producto {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .producto-img {
+          width: 50px;
+          height: 50px;
+          object-fit: cover;
+          border-radius: 5px;
         }
     </style>
 </head>
@@ -53,7 +68,7 @@
     </div>
 
     <script>
-        const apiUrl = "https://script.google.com/macros/s/AKfycbzm7it94Rp4MXQ0txaq2cmLXHMdGhMArv55cqm-Uvm1ytFOPhbBcF3L53WYtOKTbzcMaA/exec"; // Reemplaza con la URL de Google Apps Script
+        const apiUrl = "https://script.google.com/macros/s/AKfycbySgU0DWOnth39fnpBRmoboXCb-DjkMMTkf1cxHKc9HbOAGQdiOIpfpeq9Nt-9LS2GA/exec"; // URL de tu Apps Script
         let products = [];
 
         async function fetchProducts() {
@@ -81,35 +96,29 @@
         }
 
         function displayProducts(list) {
-            const tbody = document.getElementById("productList");
-            tbody.innerHTML = ""; // Limpiar la tabla
+            const productList = document.getElementById("productList");
+            productList.innerHTML = ""; // Limpiar la lista antes de cargar los productos
 
-            list.forEach(p => {
-                const row = tbody.insertRow();
+            list.forEach((p, index) => {
+                const row = document.createElement("tr");
 
-                // Si la celda de imagen tiene una URL, mostrar imagen
-                let imgCell = row.insertCell(0);
-                if (p["Imagen"] && p["Imagen"].startsWith("http")) {
-                    let img = document.createElement("img");
-                    img.src = p["Imagen"];
-                    img.alt = "Imagen del producto";
-                    imgCell.appendChild(img);
-                } else {
-                    imgCell.textContent = "Sin imagen";
-                }
+                row.innerHTML = `
+                    <td><img src="${p.imagen}" alt="Imagen del producto" class="producto-img"></td>
+                    <td>${p.producto}</td>
+                    <td>${p.marca}</td>
+                    <td>$${p.precio}</td>
+                    <td>${p.palet}</td>
+                    <td>${p.formaEntrega}</td>
+                    <td>${p.pago}</td>
+                    <td>${p.conEntrega}</td>
+                `;
 
-                row.insertCell(1).textContent = p["Descripción"] || "-";
-                row.insertCell(2).textContent = p["Marca"] || "-";
-                row.insertCell(3).textContent = p["Precio"] || "-";
-                row.insertCell(4).textContent = p["Unidad de Medida"] || "-";
-                row.insertCell(5).textContent = p["Cantidad Pack"] || "-";
-                row.insertCell(6).textContent = p["Forma de Pago"] || "-";
-                row.insertCell(7).textContent = p["Plazo de Entrega"] || "-";
+                productList.appendChild(row);
             });
         }
 
         function populateBrandFilter() {
-            let brands = [...new Set(products.map(p => p["Marca"]))].filter(Boolean);
+            let brands = [...new Set(products.map(p => p.marca))].filter(Boolean);
             const brandFilter = document.getElementById("brandFilter");
             brandFilter.innerHTML = '<option value="">Todas las marcas</option>' +
                 brands.map(brand => `<option value="${brand}">${brand}</option>`).join('');
@@ -119,8 +128,8 @@
             let searchTerm = document.getElementById("search").value.toLowerCase();
             let selectedBrand = document.getElementById("brandFilter").value;
             let filtered = products.filter(p =>
-                p["Descripción"].toLowerCase().includes(searchTerm) &&
-                (selectedBrand === "" || p["Marca"] === selectedBrand)
+                p.producto.toLowerCase().includes(searchTerm) &&
+                (selectedBrand === "" || p.marca === selectedBrand)
             );
             displayProducts(filtered);
         }
@@ -130,15 +139,16 @@
             let sorted = [...products];
 
             if (sortType === "asc") {
-                sorted.sort((a, b) => parseFloat(a["Precio"]) - parseFloat(b["Precio"]));
+                sorted.sort((a, b) => parseFloat(a.precio) - parseFloat(b.precio));
             } else if (sortType === "desc") {
-                sorted.sort((a, b) => parseFloat(b["Precio"]) - parseFloat(a["Precio"]));
+                sorted.sort((a, b) => parseFloat(b.precio) - parseFloat(a.precio));
             }
             displayProducts(sorted);
         }
 
-        fetchProducts();
+        fetchProducts(); // Llama a la función para cargar los productos
     </script>
 
 </body>
 </html>
+
