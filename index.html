@@ -10,7 +10,6 @@
         .filter-container { margin: 10px; display: flex; flex-direction: column; gap: 10px; }
         input, select { padding: 8px; font-size: 1em; width: 90%; max-width: 400px; margin: auto; }
         
-        /* Contenedor para hacer la tabla desplazable en móviles */
         .table-container { overflow-x: auto; margin: 20px; }
 
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
@@ -55,9 +54,8 @@
     </div>
 
     <script>
-        const apiUrl = "https://script.google.com/macros/s/AKfycbz2IGGoFZuOG4-Kdsw-_Xzvtzd95lYvt2hdX1-PvlV56mUlAA6BkZBiJ9ky_Uq8acJsTA/exec"; // Reemplazar con tu API de Apps Script
+        const apiUrl = "https://script.google.com/macros/s/AKfycbz2IGGoFZuOG4-Kdsw-_Xzvtzd95lYvt2hdX1-PvlV56mUlAA6BkZBiJ9ky_Uq8acJsTA/exec"; // Reemplazar con la URL de la API de Apps Script
         let products = [];
-        let headers = [];
 
         async function fetchProducts() {
             try {
@@ -69,10 +67,8 @@
                     return;
                 }
 
-                headers = data.headers;
+                displayTableHeader(data.headers);
                 products = data.products;
-
-                displayTableHeader();
                 populateBrandFilter();
                 displayProducts(products);
             } catch (error) {
@@ -80,7 +76,7 @@
             }
         }
 
-        function displayTableHeader() {
+        function displayTableHeader(headers) {
             const headerRow = document.getElementById("tableHeader");
             headerRow.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join('') + "</tr>";
         }
@@ -88,16 +84,16 @@
         function displayProducts(list) {
             const container = document.getElementById("productList");
             container.innerHTML = "";
-            list.forEach((product, index) => {
+            list.forEach(product => {
                 let row = document.createElement("tr");
                 row.className = "product-row";
                 row.innerHTML = `
-                    <td><img src="${product.imagen}" alt="Imagen"></td>
+                    <td><img src="${product.imagen || 'https://via.placeholder.com/40'}" alt="Imagen"></td>
                     <td>${product.producto || "-"}</td>
                     <td>${product.marca || "-"}</td>
                     <td>${product.pack || "-"}</td>
                     <td>${product.palet || "-"}</td>
-                    <td>$${product.precio || "0"}</td>
+                    <td>${product.precio || "-"}</td>
                     <td>${product.forma_entrega || "-"}</td>
                     <td>${product.pago || "-"}</td>
                     <td>${product.con_entrega || "-"}</td>
@@ -118,4 +114,25 @@
             let selectedBrand = document.getElementById("brandFilter").value;
             let filtered = products.filter(p =>
                 p.producto.toLowerCase().includes(searchTerm) &&
-                (
+                (selectedBrand === "" || p.marca === selectedBrand)
+            );
+            displayProducts(filtered);
+        }
+
+        function sortProducts() {
+            let sortType = document.getElementById("priceSort").value;
+            let sorted = [...products];
+
+            if (sortType === "asc") {
+                sorted.sort((a, b) => parseFloat(a.precio) - parseFloat(b.precio));
+            } else if (sortType === "desc") {
+                sorted.sort((a, b) => parseFloat(b.precio) - parseFloat(a.precio));
+            }
+            displayProducts(sorted);
+        }
+
+        fetchProducts();
+    </script>
+
+</body>
+</html>
