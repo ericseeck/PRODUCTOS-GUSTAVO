@@ -99,33 +99,26 @@
         }
 
         function displayProducts(list) {
-  const lista = document.getElementById("lista");
-  lista.innerHTML = ""; // Limpiar la lista antes de cargar los productos
+            const productList = document.getElementById("productList");
+            productList.innerHTML = ""; // Limpiar la lista antes de cargar los productos
 
-  list.forEach((p, index) => {
-    const item = document.createElement("li");
-    item.classList.add("producto-item");
-
-    item.innerHTML = `
-      <div class="producto">
-        <img src="${p.imagen}" alt="Imagen del producto" class="producto-img">
-        <span class="producto-descripcion">${p.descripcion}</span>
-        <span class="producto-marca">${p.marca}</span>
-        <span class="producto-precio">$${p.precio}</span>
-        <button onclick="mostrarDetalles(${index})">Ver Detalle</button>
-      </div>
-      <div class="detalle-producto" id="detalle-${index}" style="display: none;">
-        <p><strong>Unidad de Medida:</strong> ${p.unidadMedida}</p>
-        <p><strong>Cantidad Pack:</strong> ${p.cantidadPack}</p>
-        <p><strong>Forma de Pago:</strong> ${p.formaPago}</p>
-        <p><strong>Plazo de Entrega:</strong> ${p.plazoEntrega}</p>
-      </div>
-    `;
-
-    lista.appendChild(item);
-  });
-}
-
+            list.forEach((p, index) => {
+                const row = document.createElement("tr");
+                
+                row.innerHTML = `
+                    <td><img src="${p.imagen}" alt="Imagen del producto" class="producto-img"></td>
+                    <td>${p.descripcion}</td>
+                    <td>${p.marca}</td>
+                    <td>$${p.precio}</td>
+                    <td>${p.unidadMedida}</td>
+                    <td>${p.cantidadPack}</td>
+                    <td>${p.formaPago}</td>
+                    <td>${p.plazoEntrega}</td>
+                `;
+                
+                productList.appendChild(row);
+            });
+        }
 
         function toggleDetail(index) {
             let detailRow = document.getElementById(`detail-${index}`);
@@ -143,7 +136,7 @@
             let searchTerm = document.getElementById("search").value.toLowerCase();
             let selectedBrand = document.getElementById("brandFilter").value;
             let filtered = products.filter(p =>
-                p.producto.toLowerCase().includes(searchTerm) &&
+                p.descripcion.toLowerCase().includes(searchTerm) &&
                 (selectedBrand === "" || p.marca === selectedBrand)
             );
             displayProducts(filtered);
@@ -166,3 +159,4 @@
 
 </body>
 </html>
+
