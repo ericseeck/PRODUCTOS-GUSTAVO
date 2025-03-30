@@ -31,6 +31,20 @@
         /* Estilos para el detalle desplegable */
         .detail-row { display: none; background-color: #f9f9f9; }
         .detail-cell { padding: 10px; font-size: 0.9em; text-align: left; border-top: none; }
+
+.producto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.producto-img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
     </style>
 </head>
 <body>
@@ -85,46 +99,33 @@
         }
 
         function displayProducts(list) {
-            const container = document.getElementById("productList");
-            container.innerHTML = "";
+  const lista = document.getElementById("lista");
+  lista.innerHTML = ""; // Limpiar la lista antes de cargar los productos
 
-            list.forEach((product, index) => {
-                let row = document.createElement("tr");
-                row.className = "product-row";
-                row.onclick = () => toggleDetail(index);
+  list.forEach((p, index) => {
+    const item = document.createElement("li");
+    item.classList.add("producto-item");
 
-                row.innerHTML = `
-                    <td><img src="${product.imagen || 'https://via.placeholder.com/40'}" alt="Imagen"></td>
-                    <td>${product.producto || "-"}</td>
-                    <td>${product.marca || "-"}</td>
-                    <td>${product.pack || "-"}</td>
-                    <td>${product.palet || "-"}</td>
-                    <td>${product.precio || "-"}</td>
-                    <td>${product.forma_entrega || "-"}</td>
-                    <td>${product.pago || "-"}</td>
-                    <td>${product.con_entrega || "-"}</td>
-                `;
+    item.innerHTML = `
+      <div class="producto">
+        <img src="${p.imagen}" alt="Imagen del producto" class="producto-img">
+        <span class="producto-descripcion">${p.descripcion}</span>
+        <span class="producto-marca">${p.marca}</span>
+        <span class="producto-precio">$${p.precio}</span>
+        <button onclick="mostrarDetalles(${index})">Ver Detalle</button>
+      </div>
+      <div class="detalle-producto" id="detalle-${index}" style="display: none;">
+        <p><strong>Unidad de Medida:</strong> ${p.unidadMedida}</p>
+        <p><strong>Cantidad Pack:</strong> ${p.cantidadPack}</p>
+        <p><strong>Forma de Pago:</strong> ${p.formaPago}</p>
+        <p><strong>Plazo de Entrega:</strong> ${p.plazoEntrega}</p>
+      </div>
+    `;
 
-                let detailRow = document.createElement("tr");
-                detailRow.className = "detail-row";
-                detailRow.id = `detail-${index}`;
-                detailRow.innerHTML = `
-                    <td colspan="9" class="detail-cell">
-                        <strong>Producto:</strong> ${product.producto || "-"}<br>
-                        <strong>Marca:</strong> ${product.marca || "-"}<br>
-                        <strong>Pack:</strong> ${product.pack || "-"}<br>
-                        <strong>Palet:</strong> ${product.palet || "-"}<br>
-                        <strong>Precio:</strong> ${product.precio || "-"}<br>
-                        <strong>Forma de Entrega:</strong> ${product.forma_entrega || "-"}<br>
-                        <strong>Pago:</strong> ${product.pago || "-"}<br>
-                        <strong>Con Entrega:</strong> ${product.con_entrega || "-"}
-                    </td>
-                `;
+    lista.appendChild(item);
+  });
+}
 
-                container.appendChild(row);
-                container.appendChild(detailRow);
-            });
-        }
 
         function toggleDetail(index) {
             let detailRow = document.getElementById(`detail-${index}`);
