@@ -5,164 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listado de Productos - Gustavo</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; }
-        .container { width: 90%; margin: auto; text-align: left; }
-        h1 { text-align: center; }
-        .search-bar { width: 100%; padding: 10px; margin-bottom: 10px; }
-        .filter-sort { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        .table-container { overflow-x: auto; }
-        .table { width: 100%; border-collapse: collapse; }
-        .table th, .table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        .table th { background: #ddd; }
-        .product-row { cursor: pointer; }
-        .details { display: none; background: #f9f9f9; padding: 10px; }
-        .product-image { width: 50px; height: 50px; object-fit: cover; }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+        h1 { margin: 20px; font-size: 1.8em; }
+        .filter-container { margin: 10px; display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 8px; font-size: 1em; width: 90%; max-width: 400px; margin: auto; }
+        
+        /* Contenedor para hacer la tabla desplazable en móviles */
+        .table-container { overflow-x: auto; margin: 20px; }
+
+        table { width: 100%; border-collapse: collapse; min-width: 800px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 0.9em; }
+        th { background-color: #f4f4f4; }
+
+        /* Ajuste de imágenes */
+        img { width: 40px; height: 40px; object-fit: cover; }
+
+        /* Diseño responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5em; }
+            .filter-container { flex-direction: column; align-items: center; }
+            input, select { width: 95%; }
+            table { min-width: 100%; font-size: 0.85em; }
+            th, td { padding: 6px; }
+            img { width: 35px; height: 35px; }
+        }
     </style>
 </head>
 <body>
 
-<h1>LISTADO DE PRODUCTOS - GUSTAVO</h1>
+    <h1>LISTADO DE PRODUCTOS - GUSTAVO</h1>
 
-<div class="container">
-    <input type="text" id="search" class="search-bar" placeholder="Buscar producto...">
-    
-    <div class="filter-sort">
-        <select id="brandFilter">
+    <div class="filter-container">
+        <input type="text" id="search" placeholder="Buscar producto..." onkeyup="filterProducts()">
+        <select id="brandFilter" onchange="filterProducts()">
             <option value="">Todas las marcas</option>
         </select>
-        <select id="sortPrice">
-            <option value="">Ordenar por precio</option>
+        <select id="priceSort" onchange="sortProducts()">
+            <option value="default">Ordenar por Precio</option>
             <option value="asc">Menor a Mayor</option>
             <option value="desc">Mayor a Menor</option>
         </select>
     </div>
 
     <div class="table-container">
-        <table class="table">
-            <thead>
-                <tr id="tableHeader"></tr>
-            </thead>
+        <table id="productTable">
+            <thead id="tableHeader"></thead>
             <tbody id="productList"></tbody>
         </table>
     </div>
-</div>
 
-<script>
-    const apiUrl = "https://script.google.com/macros/s/AKfycbzQLETn0HtKjWYS5_QfQuilbscgU2JBIsJhHfclJvZYue_3Dujni2IJESbfFtzof49T4Q/exec";
+    <script>
+        const apiUrl = "https://script.google.com/macros/s/AKfycbzQLETn0HtKjWYS5_QfQuilbscgU2JBIsJhHfclJvZYue_3Dujni2IJESbfFtzof49T4Q/exec"; // Reemplazar con tu API de Apps Script
+        let products = [];
+        let headers = [];
 
-    let products = [];
-    let headers = [];
+        async function fetchProducts() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
 
-    async function fetchProducts() {
-    try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        
-        console.log("Datos recibidos desde Apps Script:", data); // Debugging
-        
-        if (!data || !data.products) {
-            console.error("Error: No se recibieron productos");
-            return;
+                if (!data || !data.products) {
+                    console.error("Error: No se recibieron productos");
+                    return;
+                }
+
+                headers = data.headers;
+                products = data.products;
+
+                displayTableHeader();
+                populateBrandFilter();
+                displayProducts(products);
+            } catch (error) {
+                console.error("Error al obtener datos:", error);
+            }
         }
 
-        headers = data.headers;
-        products = data.products;
+        function displayTableHeader() {
+            const headerRow = document.getElementById("tableHeader");
+            headerRow.innerHTML = "<tr>" + headers.map(h => `<th>${h}</th>`).join('') + "</tr>";
+        }
 
-        displayTableHeader();
-        populateBrandFilter();
-        displayProducts(products);
-    } catch (error) {
-        console.error("Error al obtener datos:", error);
-    }
-}
+        function displayProducts(list) {
+            const container = document.getElementById("productList");
+            container.innerHTML = "";
+            list.forEach((product, index) => {
+                let row = document.createElement("tr");
+                row.className = "product-row";
+                row.innerHTML = `
+                    <td><img src="${product.imagen}" alt="Imagen"></td>
+                    <td>${product.producto || "-"}</td>
+                    <td>${product.marca || "-"}</td>
+                    <td>${product.pack || "-"}</td>
+                    <td>${product.palet || "-"}</td>
+                    <td>$${product.precio || "0"}</td>
+                    <td>${product.forma_entrega || "-"}</td>
+                    <td>${product.pago || "-"}</td>
+                    <td>${product.con_entrega || "-"}</td>
+                `;
+                container.appendChild(row);
+            });
+        }
 
+        function populateBrandFilter() {
+            let brands = [...new Set(products.map(p => p.marca))].filter(Boolean);
+            const brandFilter = document.getElementById("brandFilter");
+            brandFilter.innerHTML = '<option value="">Todas las marcas</option>' +
+                brands.map(brand => `<option value="${brand}">${brand}</option>`).join('');
+        }
 
-    function displayTableHeader() {
-        const headerRow = document.getElementById("tableHeader");
-        headerRow.innerHTML = "";
-        headers.forEach(header => {
-            let th = document.createElement("th");
-            th.textContent = header;
-            headerRow.appendChild(th);
-        });
-    }
-
-    function populateBrandFilter() {
-        const brands = [...new Set(products.map(p => p.marca))];
-        const filter = document.getElementById("brandFilter");
-        brands.forEach(brand => {
-            let option = document.createElement("option");
-            option.value = brand;
-            option.textContent = brand;
-            filter.appendChild(option);
-        });
-    }
-
-    function displayProducts(list) {
-        const container = document.getElementById("productList");
-        container.innerHTML = "";
-        list.forEach((product, index) => {
-            let row = document.createElement("tr");
-            row.className = "product-row";
-            row.innerHTML = `
-                <td><img src="${product.imagen}" class="product-image" alt="Imagen"></td>
-                <td>${product.producto}</td>
-                <td>${product.marca}</td>
-                <td>${product.pack}</td>
-                <td>${product.palet}</td>
-                <td>$${product.precio}</td>
-                <td>${product.forma_entrega}</td>
-                <td>${product.pago}</td>
-                <td>${product.con_entrega}</td>
-            `;
-            row.addEventListener("click", () => toggleDetails(index));
-            container.appendChild(row);
-
-            let detailsRow = document.createElement("tr");
-            let detailsCell = document.createElement("td");
-            detailsCell.colSpan = headers.length;
-            detailsCell.className = "details";
-            detailsCell.id = `details-${index}`;
-            detailsCell.innerHTML = `
-                <strong>Producto:</strong> ${product.producto}<br>
-                <strong>Marca:</strong> ${product.marca}<br>
-                <strong>Pack:</strong> ${product.pack}<br>
-                <strong>Palet:</strong> ${product.palet}<br>
-                <strong>Precio:</strong> $${product.precio}<br>
-                <strong>Forma de Entrega:</strong> ${product.forma_entrega}<br>
-                <strong>Pago:</strong> ${product.pago}<br>
-                <strong>Con Entrega:</strong> ${product.con_entrega}
-            `;
-            detailsRow.appendChild(detailsCell);
-            container.appendChild(detailsRow);
-        });
-    }
-
-    function toggleDetails(index) {
-        let details = document.getElementById(`details-${index}`);
-        details.style.display = details.style.display === "none" ? "table-cell" : "none";
-    }
-
-    document.getElementById("search").addEventListener("input", (e) => {
-        const query = e.target.value.toLowerCase();
-        const filtered = products.filter(p => p.producto.toLowerCase().includes(query));
-        displayProducts(filtered);
-    });
-
-    document.getElementById("brandFilter").addEventListener("change", (e) => {
-        const brand = e.target.value;
-        const filtered = brand ? products.filter(p => p.marca === brand) : products;
-        displayProducts(filtered);
-    });
-
-    document.getElementById("sortPrice").addEventListener("change", (e) => {
-        const order = e.target.value;
-        const sorted = [...products].sort((a, b) => order === "asc" ? a.precio - b.precio : b.precio - a.precio);
-        displayProducts(sorted);
-    });
-
-    fetchProducts();
-</script>
-
-</body>
-</html>
+        function filterProducts() {
+            let searchTerm = document.getElementById("search").value.toLowerCase();
+            let selectedBrand = document.getElementById("brandFilter").value;
+            let filtered = products.filter(p =>
+                p.producto.toLowerCase().includes(searchTerm) &&
+                (
