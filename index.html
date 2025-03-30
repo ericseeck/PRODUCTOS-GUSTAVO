@@ -54,14 +54,28 @@
     let headers = [];
 
     async function fetchProducts() {
+    try {
         const response = await fetch(apiUrl);
         const data = await response.json();
-        headers = data.headers; // Captura los encabezados
-        products = data.products; // Captura los productos
+        
+        console.log("Datos recibidos desde Apps Script:", data); // Debugging
+        
+        if (!data || !data.products) {
+            console.error("Error: No se recibieron productos");
+            return;
+        }
+
+        headers = data.headers;
+        products = data.products;
+
         displayTableHeader();
         populateBrandFilter();
         displayProducts(products);
+    } catch (error) {
+        console.error("Error al obtener datos:", error);
     }
+}
+
 
     function displayTableHeader() {
         const headerRow = document.getElementById("tableHeader");
