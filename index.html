@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Productos</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { width: 80%; margin: auto; }
+        .search-bar { width: 100%; padding: 10px; margin-bottom: 10px; }
+        .filter-sort { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .product { border: 1px solid #ddd; padding: 10px; margin-bottom: 5px; cursor: pointer; }
+        .product img { width: 50px; height: 50px; object-fit: cover; }
+        .details { display: none; background: #f9f9f9; padding: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <input type="text" id="search" class="search-bar" placeholder="Buscar producto...">
+    
+    <div class="filter-sort">
+        <select id="brandFilter">
+            <option value="">Todas las marcas</option>
+        </select>
+        <select id="sortPrice">
+            <option value="">Ordenar por precio</option>
+            <option value="asc">Menor a Mayor</option>
+            <option value="desc">Mayor a Menor</option>
+        </select>
+    </div>
+
+    <div id="productList"></div>
+</div>
+
+<script>
+    const apiUrl = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLiRT6IizglCTRjJRAf9mHuazGYSsJD89lh5EPMMFNTJdZpGIJ8yUqj6Q2XXWDkCxRpjlddS2F927V3Bn6QnsKKPXdStsvxmbP7KcoS49IYk1cFM9mAm3X21Sjr9mQ-Vi19eYZTViq56zuwVQMsrbxdk9EPNNLQUQa59LRAUzUKqzLpbnfHdzgaj0T5XoBMcMQ_iaJH9hmNAohYWnPcR4bPqjpxGwsU3Y6NY0CLSXFK5WtmrtiqI1Z3xS0Wh0jBWpufXVSrFsiw2T7I8CJK43U7NwhOosJtGIHErHMnr&lib=Mg4_-BZQ5eKqxrJky2M6RanUYN4nIvDyU";
+
+    let products = [];
+
+    async function fetchProducts() {
+        const response = await fetch(apiUrl);
+        products = await response.json();
+        populateBrandFilter();
+        displayProducts(products);
+    }
+
+    function populateBrandFilter() {
+        const brands = [...new Set(products.map(p => p.marca))];
+        const filter = document.getElementById("brandFilter");
+        brands.forEach(brand => {
+            let option = document.createElement("option");
+            option.value = brand;
+            option.textContent = brand;
+            filter.appendChild(option);
+        });
+    }
+
+    function displayProducts(list) {
+        const container = document.getElementById("productList");
+        container.innerHTML = "";
+        list.forEach((product, index) => {
+            let div = document.createElement("div");
+            div.className = "product";
+            div.innerHTML = `
+                <img src="${product.imagen}" alt="Imagen">
+                <strong>${product.descripcion}</strong> - ${product.marca} - $${product.precio}
+                <div class="details" id="details-${index}">
+                    <p>Unidad de Medida: ${product.unidad_medida}</p>
+                    <p>Cantidad Pack: ${product.cantidad_pack}</p>
+                    <p>Forma de Pago: ${product.forma_pago}</p>
+                    <p>Plazo de Entrega: ${product.plazo_entrega}</p>
+                </div>
+            `;
+            div.addEventListener("click", () => {
+                let details = document.getElementById(`details-${index}`);
+                details.style.display = details.style.display === "none" ? "block" : "none";
+            });
+            container.appendChild(div);
+        });
+    }
+
+    document.getElementById("search").addEventListener("input", (e) => {
+        const query = e.target.value.toLowerCase();
+        const filtered = products.filter(p => p.descripcion.toLowerCase().includes(query));
+        displayProducts(filtered);
+    });
+
+    document.getElementById("brandFilter").addEventListener("change", (e) => {
+        const brand = e.target.value;
+        const filtered = brand ? products.filter(p => p.marca === brand) : products;
+        displayProducts(filtered);
+    });
+
+    document.getElementById("sortPrice").addEventListener("change", (e) => {
+        const order = e.target.value;
+        const sorted = [...products].sort((a, b) => order === "asc" ? a.precio - b.precio : b.precio - a.precio);
+        displayProducts(sorted);
+    });
+
+    fetchProducts();
+</script>
+
+</body>
+</html>
