@@ -54,23 +54,39 @@
         let products = [];
 
         async function fetchProducts() {
-            try {
-                const response = await fetch(apiUrl + "?action=getProducts");
-                const data = await response.json();
+    const apiUrl = "TU_URL_DE_APPS_SCRIPT";
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      console.log(data); // Verifica que llegan los datos en consola
 
-                if (!data || !data.products) {
-                    console.error("Error: No se recibieron productos");
-                    return;
-                }
+      if (data.products) {
+        displayProducts(data.products);
+      }
+    } catch (error) {
+      console.error("Error al obtener productos:", error);
+    }
+  }
 
-                displayTableHeader(data.headers);
-                products = data.products;
-                populateBrandFilter();
-                displayProducts(products);
-            } catch (error) {
-                console.error("Error al obtener datos:", error);
-            }
-        }
+  function displayProducts(products) {
+    const table = document.getElementById("productTable");
+    const tbody = table.querySelector("tbody");
+    tbody.innerHTML = ""; // Limpia la tabla
+
+    products.forEach(p => {
+      const row = tbody.insertRow();
+      row.insertCell(0).textContent = p["Imagen"];
+      row.insertCell(1).textContent = p["Descripción"];
+      row.insertCell(2).textContent = p["Marca"];
+      row.insertCell(3).textContent = p["Precio"];
+      row.insertCell(4).textContent = p["Unidad de Medida"];
+      row.insertCell(5).textContent = p["Cantidad Pack"];
+      row.insertCell(6).textContent = p["Forma de Pago"];
+      row.insertCell(7).textContent = p["Plazo de Entrega"];
+    });
+  }
+
+  window.onload = fetchProducts;
 
         function displayTableHeader(headers) {
             const headerRow = document.getElementById("tableHeader");
