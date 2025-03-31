@@ -7,16 +7,47 @@
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
         h1 { margin: 20px; font-size: 1.8em; }
+        .filter-container { margin: 10px; display: flex; flex-direction: column; gap: 10px; }
+        input, select { padding: 8px; font-size: 1em; width: 90%; max-width: 400px; margin: auto; }
+        
         .table-container { overflow-x: auto; margin: 20px; }
         table { width: 100%; border-collapse: collapse; min-width: 800px; }
         th, td { border: 1px solid black; padding: 8px; text-align: left; font-size: 0.9em; }
         th { background-color: #f4f4f4; }
+
+        /* Ajuste de imágenes */
         img { width: 40px; height: 40px; object-fit: cover; }
+
+        /* Diseño responsive */
+        @media (max-width: 768px) {
+            h1 { font-size: 1.5em; }
+            .filter-container { flex-direction: column; align-items: center; }
+            input, select { width: 95%; }
+            table { min-width: 100%; font-size: 0.85em; }
+            th, td { padding: 6px; }
+            img { width: 35px; height: 35px; }
+        }
+
+        /* Estilos para el detalle desplegable */
+        .detail-row { display: none; background-color: #f9f9f9; }
+        .detail-cell { padding: 10px; font-size: 0.9em; text-align: left; border-top: none; }
     </style>
 </head>
 <body>
 
     <h1>LISTADO DE PRODUCTOS - GUSTAVO</h1>
+
+    <div class="filter-container">
+        <input type="text" id="search" placeholder="Buscar producto..." onkeyup="filterProducts()">
+        <select id="brandFilter" onchange="filterProducts()">
+            <option value="">Todas las marcas</option>
+        </select>
+        <select id="priceSort" onchange="sortProducts()">
+            <option value="default">Ordenar por Precio</option>
+            <option value="asc">Menor a Mayor</option>
+            <option value="desc">Mayor a Menor</option>
+        </select>
+    </div>
 
     <div class="table-container">
         <table id="productTable">
@@ -26,7 +57,7 @@
     </div>
 
     <script>
-        const apiUrl = "https://script.google.com/macros/s/AKfycbzbj9iUXOtmqSszl4biIGXODCb7UrirYli_PSzXftzK8X23mvsaw2WkhdaDyuO3snel8A/exec"; // Reemplázalo con tu URL real
+        const apiUrl = "https://script.google.com/macros/s/AKfycbx2hGxONlqpoDSDgV32Xye2xKGqt4zOTkdYlogpuAIawO4K5EqhDwnjXcU4zvREUJdLFw/exec"; // Reemplazar con la URL de la API de Apps Script
         let products = [];
 
         async function fetchProducts() {
@@ -41,6 +72,7 @@
 
                 displayTableHeader(data.headers);
                 products = data.products;
+                populateBrandFilter();
                 displayProducts(products);
             } catch (error) {
                 console.error("Error al obtener datos:", error);
@@ -53,25 +85,79 @@
         }
 
         function displayProducts(list) {
-            const productList = document.getElementById("productList");
-            productList.innerHTML = ""; 
+            const container = document.getElementById("productList");
+            container.innerHTML = "";
 
-            list.forEach((p) => {
-                const row = document.createElement("tr");
+            list.forEach((product, index) => {
+                let row = document.createElement("tr");
+                row.className = "product-row";
+                row.onclick = () => toggleDetail(index);
 
                 row.innerHTML = `
-                    <td><img src="${p.imagen}" alt="Imagen del producto" onerror="this.src='https://via.placeholder.com/40'"></td>
-                    <td>${p.producto || "-"}</td>
-                    <td>${p.marca || "-"}</td>
-                    <td>${p.palet || "-"}</td>
-                    <td>${p.precio ? `$${p.precio}` : "-"}</td>
-                    <td>${p.formadeentrega || "-"}</td>
-                    <td>${p.pago || "-"}</td>
-                    <td>${p.conentrega || "-"}</td>
+                    <td><img src="${product.imagen || 'https://via.placeholder.com/40'}" alt="Imagen"></td>
+                    <td>${product.producto || "-"}</td>
+                    <td>${product.marca || "-"}</td>
+                    <td>${product.pack || "-"}</td>
+                    <td>${product.palet || "-"}</td>
+                    <td>${product.precio || "-"}</td>
+                    <td>${product.forma_entrega || "-"}</td>
+                    <td>${product.pago || "-"}</td>
+                    <td>${product.con_entrega || "-"}</td>
                 `;
 
-                productList.appendChild(row);
+                let detailRow = document.createElement("tr");
+                detailRow.className = "detail-row";
+                detailRow.id = `detail-${index}`;
+                detailRow.innerHTML = `
+                    <td colspan="9" class="detail-cell">
+                        <strong>Producto:</strong> ${product.producto || "-"}<br>
+                        <strong>Marca:</strong> ${product.marca || "-"}<br>
+                        <strong>Pack:</strong> ${product.pack || "-"}<br>
+                        <strong>Palet:</strong> ${product.palet || "-"}<br>
+                        <strong>Precio:</strong> ${product.precio || "-"}<br>
+                        <strong>Forma de Entrega:</strong> ${product.forma_entrega || "-"}<br>
+                        <strong>Pago:</strong> ${product.pago || "-"}<br>
+                        <strong>Con Entrega:</strong> ${product.con_entrega || "-"}
+                    </td>
+                `;
+
+                container.appendChild(row);
+                container.appendChild(detailRow);
             });
+        }
+
+        function toggleDetail(index) {
+            let detailRow = document.getElementById(`detail-${index}`);
+            detailRow.style.display = detailRow.style.display === "table-row" ? "none" : "table-row";
+        }
+
+        function populateBrandFilter() {
+            let brands = [...new Set(products.map(p => p.marca))].filter(Boolean);
+            const brandFilter = document.getElementById("brandFilter");
+            brandFilter.innerHTML = '<option value="">Todas las marcas</option>' +
+                brands.map(brand => `<option value="${brand}">${brand}</option>`).join('');
+        }
+
+        function filterProducts() {
+            let searchTerm = document.getElementById("search").value.toLowerCase();
+            let selectedBrand = document.getElementById("brandFilter").value;
+            let filtered = products.filter(p =>
+                p.producto.toLowerCase().includes(searchTerm) &&
+                (selectedBrand === "" || p.marca === selectedBrand)
+            );
+            displayProducts(filtered);
+        }
+
+        function sortProducts() {
+            let sortType = document.getElementById("priceSort").value;
+            let sorted = [...products];
+
+            if (sortType === "asc") {
+                sorted.sort((a, b) => parseFloat(a.precio) - parseFloat(b.precio));
+            } else if (sortType === "desc") {
+                sorted.sort((a, b) => parseFloat(b.precio) - parseFloat(a.precio));
+            }
+            displayProducts(sorted);
         }
 
         fetchProducts();
