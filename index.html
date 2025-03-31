@@ -62,6 +62,15 @@
     .details-container .close-btn:hover {
       background-color: #d32f2f;
     }
+    .detail-row {
+      background-color: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+    .detail-row img {
+      max-width: 150px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -91,17 +100,11 @@
         </tbody>
       </table>
     </div>
-    
-    <!-- Detalle del producto -->
-    <div id="productDetails" class="details-container">
-      <button class="close-btn" onclick="closeDetails()">Cerrar</button>
-      <h3>Detalle del Producto</h3>
-      <div id="detailContent"></div>
-    </div>
   </div>
 
   <script>
     let productsData = [];
+    let currentDetailIndex = -1; // Para llevar el control del producto que está expandido
 
     // Obtener los productos desde la API (backend)
     fetch('https://script.google.com/macros/s/AKfycbx2hGxONlqpoDSDgV32Xye2xKGqt4zOTkdYlogpuAIawO4K5EqhDwnjXcU4zvREUJdLFw/exec')
@@ -129,7 +132,7 @@
           <td>${product.pack}</td>
           <td>${product.precio}</td>
         `;
-        row.onclick = () => showDetails(index);
+        row.onclick = () => toggleDetails(index, row);
         tableBody.appendChild(row);
       });
     }
@@ -161,28 +164,42 @@
       });
     }
 
-    // Mostrar el detalle del producto
-    function showDetails(index) {
-      const product = productsData[index];
-      const detailContent = document.getElementById('detailContent');
-      const productDetails = `
-        <img src="${product.imagen}" alt="${product.producto}" width="200">
-        <p><strong>Producto:</strong> ${product.producto}</p>
-        <p><strong>Marca:</strong> ${product.marca}</p>
-        <p><strong>Pack:</strong> ${product.pack}</p>
-        <p><strong>Palet:</strong> ${product.palet}</p>
-        <p><strong>Precio:</strong> ${product.precio}</p>
-        <p><strong>Forma de Entrega:</strong> ${product.forma_entrega}</p>
-        <p><strong>Pago:</strong> ${product.pago}</p>
-        <p><strong>Con entrega:</strong> ${product.con_entrega}</p>
-      `;
-      detailContent.innerHTML = productDetails;
-      document.getElementById('productDetails').style.display = 'block';
-    }
+    // Toggle para abrir/cerrar el detalle
+    function toggleDetails(index, row) {
+      // Si ya está abierto el detalle para el mismo producto, lo cerramos
+      if (currentDetailIndex === index) {
+        row.nextElementSibling.remove(); // Eliminar la fila de detalle
+        currentDetailIndex = -1; // Resetear el índice
+        return;
+      }
 
-    // Cerrar el detalle del producto
-    function closeDetails() {
-      document.getElementById('productDetails').style.display = 'none';
+      // Si hay un detalle abierto, lo cerramos antes de abrir uno nuevo
+      if (currentDetailIndex !== -1) {
+        const previousRow = document.querySelectorAll('tr[data-index]')[currentDetailIndex];
+        previousRow.nextElementSibling.remove(); // Eliminar el detalle anterior
+      }
+
+      // Insertamos el nuevo detalle
+      const detailRow = document.createElement('tr');
+      detailRow.classList.add('detail-row');
+      detailRow.innerHTML = `
+        <td colspan="5">
+          <div>
+            <img src="${productsData[index].imagen}" alt="${productsData[index].producto}" width="200">
+            <p><strong>Producto:</strong> ${productsData[index].producto}</p>
+            <p><strong>Marca:</strong> ${productsData[index].marca}</p>
+            <p><strong>Pack:</strong> ${productsData[index].pack}</p>
+            <p><strong>Palet:</strong> ${productsData[index].palet}</p>
+            <p><strong>Precio:</strong> ${productsData[index].precio}</p>
+            <p><strong>Forma de Entrega:</strong> ${productsData[index].forma_entrega}</p>
+            <p><strong>Pago:</strong> ${productsData[index].pago}</p>
+            <p><strong>Con entrega:</strong> ${productsData[index].con_entrega}</p>
+          </div>
+        </td>
+      `;
+      row.parentNode.insertBefore(detailRow, row.nextSibling); // Insertar el detalle justo después de la fila seleccionada
+
+      currentDetailIndex = index; // Establecer el índice del detalle actual
     }
   </script>
 </body>
